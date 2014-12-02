@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -7,8 +8,6 @@ namespace Application
 {
 	public class TextImage
 	{
-
-		private static Pixel PadPixel = new Pixel(0, 0, 0);
 
 		private readonly string _originalText;
 
@@ -49,8 +48,8 @@ namespace Application
 			Image = new Bitmap(width, height);
 
 			for (var i = 0; i < (width * height); i++)
-			{		
-				var pixel = i < pixels.Length ? pixels[i] : PadPixel;
+			{
+				var pixel = i < pixels.Length ? pixels[i] : new Pixel(0, 0, 0);
 				var y = i / width;
 				var x = i - (y * width);
 
@@ -80,6 +79,23 @@ namespace Application
 				imageArea = x * y;
 			}
 			return new[] { x, y };
+		}
+
+		public static string FromImage(Bitmap image)
+		{
+			var bytes = new List<byte>();
+			for (var y = 0; y < image.Height; y++)
+			{
+				for (var x = 0; x < image.Width; x++)
+				{
+					var color = image.GetPixel(x, y);
+					bytes.Add(color.R);
+					bytes.Add(color.G);
+					bytes.Add(color.B);
+				}
+			}
+			var text = Encoding.UTF8.GetString(bytes.ToArray());
+			return text.TrimEnd(Encoding.UTF8.GetString(new byte[] { 0 }).ToCharArray());
 		}
 
 	}

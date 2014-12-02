@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Application
 {
@@ -18,7 +18,7 @@ namespace Application
 			InputDirectory = new DirectoryInfo(Path.Combine(basePath, "input"));
 			OutputDirectory = new DirectoryInfo(Path.Combine(basePath, "output"));
 
-			if (!InputDirectory.Exists || !GetFilesToProcess().Any())
+			if (!InputDirectory.Exists || !InputDirectory.GetFiles().Any())
 			{
 				throw new Exception("Please provide at least one input file");
 			}
@@ -30,32 +30,69 @@ namespace Application
 
 		}
 
-		public void ProcessFiles()
+		#region text to image
+
+		public Processor ProcessTextFiles()
 		{
-			foreach (var file in GetFilesToProcess())
+			foreach (var file in GetTextToProcess())
 			{
-				ProcessFile(file);
+				ProcessTextFile(file);
 			}
+			return this;
 		}
 
-		private void ProcessFile(FileInfo file)
+		private void ProcessTextFile(FileInfo file)
 		{
-			var contents = ReadFile(file);
+			var contents = ReadTextFile(file);
 			var textImage = new TextImage(contents);
 
-			var imageName = Path.Combine(OutputDirectory.FullName, string.Format("{0}.png", file.Name.Split('.').First()));
-			textImage.Image.Save(imageName);
+			var fileName = Path.Combine(OutputDirectory.FullName, string.Format("{0}.png", file.Name.Split('.').First()));
+			textImage.Image.Save(fileName);
 		}
 
-		private IEnumerable<FileInfo> GetFilesToProcess()
+		private IEnumerable<FileInfo> GetTextToProcess()
 		{
 			return InputDirectory.GetFiles("*.txt");
 		}
 
-		private string ReadFile(FileSystemInfo file)
+		private string ReadTextFile(FileSystemInfo file)
 		{
 			return File.ReadAllText(file.FullName);
 		}
 
+		#endregion
+
+		#region image to text
+
+		public Processor ProcessImageFiles()
+		{
+			foreach (var imageFile in GetImagesToProcess())
+			{
+				ProcessImageFile(imageFile);
+			}
+			return this;
+		}
+
+		private void ProcessImageFile(FileInfo file)
+		{
+			var image = Image.FromFile(file.FullName);
+			var text = TextImage.FromImage(new Bitmap(image));
+
+			var fileName = Path.Combine(OutputDirectory.FullName, string.Format("{0}.txt", file.Name.Split('.').First()));
+			using (var writer = new StreamWriter(fileName))
+			{
+				writer.Write(text);
+				writer.Close();
+			}
+		}
+
+		private IEnumerable<FileInfo> GetImagesToProcess()
+		{
+			return InputDirectory.GetFiles("*.png");
+		}
+
+		#endregion
+
 	}
+
 }
