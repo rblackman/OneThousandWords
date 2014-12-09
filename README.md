@@ -1,7 +1,7 @@
 One Thousand Words
 ==================
 
-A simple program to convert a text document into an image. (Or convert an image back into a text document). 
+A simple program to encode a text document as an image. (Or convert an image back into a text document). 
 
 Usage
 -----
